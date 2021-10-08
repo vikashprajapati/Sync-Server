@@ -7,16 +7,26 @@ const io = new Server(server)
 
 // constants
 const PORT = 5000
+const THEATER_ROOM = "Theater 1"
 
 // socket events
 io.on("connection", (socket) => {
     console.log(`connection opened by ${socket.id}`);
-    socket.join("Theater 1")
+    socket.join(THEATER_ROOM)
     socket.to(socket.id).emit("Theater Joined", "Success")
     socket.on("onMessage", (anotherSocket, message) => {
         console.log(`message received from client ${anotherSocket}`)
         console.log(message)
         socket.broadcast.emit("onMessage", message)
+    }).on("played", (theater) => {
+        console.log(`video played at ${theater}`)
+        socket.broadcast.emit("played")
+    }).on("paused", (theater) => {
+        console.log(`video paused at ${theater}`)
+        socket.broadcast.emit("paused")
+    }).on("previousVideo", (theater) => {
+        console.log(`previous video at ${theater}`)
+        socket.broadcast.emit("previousVideo")
     })
 })
 
