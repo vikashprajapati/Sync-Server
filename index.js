@@ -8,13 +8,24 @@ const io = new Server(server)
 // constants
 const PORT = 5000
 const THEATER_ROOM = "Theater 1"
+const connections = []
+const users = []
+const userRooms = {}
 
 // socket events
 io.on("connection", (socket) => {
     console.log(`connection opened by ${socket.id}`);
-    socket.join(THEATER_ROOM)
-    socket.to(socket.id).emit("Theater Joined", "Success")
-    socket.on("onMessage", (anotherSocket, message) => {
+    connections.push(socket.id)
+    
+    // initially getting the already created room info
+    socket.emit("joinRoomInfo")
+    socket.on("roomJoinInfo", (roomInfo) => {
+        socket.join(roomInfo)
+        userRooms[socket.id] = roomInfo
+        console.log(`room ${roomInfo} joined`)
+        
+        // send information of all participants within this room to newly joined user
+    }).on("onMessage", (anotherSocket, message) => {
         console.log(`message received from client ${anotherSocket}`)
         console.log(message)
         socket.broadcast.emit("onMessage", message)
@@ -27,11 +38,16 @@ io.on("connection", (socket) => {
     }).on("previousVideo", (theater) => {
         console.log(`previous video at ${theater}`)
         socket.broadcast.emit("previousVideo")
+    }).on("disconnect", (clientId) => {
+        console.log(`client ${clientId} disconnected`)
+        socket.to(room).emit("client disconnected", {
+            clientId : clientId
+        })
     })
 })
 
 app.get('/', (req, res) => {
-    res.send('<h1>hello boy! Welcome to the homepage.</h1>')
+    res.send('<h1>Server is running</h1>')
 })
 
 // server listening
