@@ -1,6 +1,7 @@
 const { Console } = require('console')
 const express = require('express')
 const app = express()
+const chalk = require('chalk')
 const http = require('http')
 const { Server } = require('socket.io')
 const server = http.createServer(app)
@@ -13,19 +14,22 @@ const users = []
 const rooms = []
 const userRooms = {}
 
+// logging constants
+const error = chalk.red
+const warning = chalk.yellow
+const success = chalk.green
+
 // socket events
 io.on("connection", (socket) => {
     console.log(`connection opened by ${socket.id}`);
     connections.push(socket.id)
     socket.on("join room", (room, user) => {
         
-        
-        console.log(io.sockets.adapter.rooms.has(room.name));
         if(!io.sockets.adapter.rooms.has(room.name)){
             // create a new room, set the room host & add participants
             let newRoom = {
                 name : room.name,
-                host : socket.id,
+                host : user.name,
                 participants : [
                     {
                         id : socket.id,
@@ -34,12 +38,12 @@ io.on("connection", (socket) => {
                 ]
             }
             rooms.push(newRoom)
-            console.log(`${room.name} room is created`);
+            console.log(success(`${newRoom.name} room is created`));
             
             socket.emit("joined room response", {
                 room : newRoom
             })
-            console.log(`joining user in new room ${room.name}, participants count ${newRoom.participants.length}`);
+            console.log(success(`joining user in new room ${newRoom.name}, participants count ${newRoom.participants.length}`));
             
         }else{
             // update participant list in room
@@ -52,9 +56,9 @@ io.on("connection", (socket) => {
                     })
                     
                     socket.emit("joined room response", {
-                        room : room[index]
+                        room : rooms[index]
                     })
-                    console.log(`joining user in existing room ${room.name}, participants count ${rooms[index].participants.length}`);
+                    console.log(success(`joining user in existing room ${rooms[index].name}, participants count ${rooms[index].participants.length}`));
                     break;
                 }
             }
@@ -62,7 +66,7 @@ io.on("connection", (socket) => {
         
         // join the room 
         socket.join(room.name)
-        console.log(`${user.name} joined room ${room.name}`)
+        console.log(success(`${user.name} joined room ${room.name} \n`))
         userRooms[socket.id] = room.name
         users.push({
             id : socket.id,
