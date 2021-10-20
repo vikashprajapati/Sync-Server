@@ -7,25 +7,22 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 // user modules imports
-const { joinRoom } = require('./room')(io)
+const { joinRoom } = require('./events/room')(io)
+const { onMessage } = require('./events/chat')(io)
 const { connections } = require('./store')
-const { success, warning, error, highlight } = require('./logger')
+const { highlight } = require('./logger')
 
 // constants
 const PORT = 5000
 
 // socket connection callbacks
 const onConnection = (socket) => {
-    console.log(`connection opened by ${socket.id}`);
+    console.log(highlight(`connection opened by ${socket.id}`));
     connections.push(socket.id)
 
     socket.on("join room", joinRoom)
 
-    socket.on("onMessage", (anotherSocket, message) => {
-        console.log(`message received from client ${anotherSocket}`)
-        console.log(message)
-        socket.broadcast.emit("onMessage", message)
-    })
+    socket.on("on message", onMessage)
 }
 
 // socket connection

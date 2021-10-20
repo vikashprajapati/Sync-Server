@@ -1,5 +1,5 @@
-const { users, rooms, userRooms } = require('./store')
-const { success, warning, error, highlight } = require('./logger')
+const { users, rooms, userRooms } = require('../store')
+const { success, warning, error, highlight } = require('../logger')
 
 module.exports = (io) => {
     const joinRoom = function(room, user){
