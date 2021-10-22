@@ -7,8 +7,8 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 // user modules imports
-const { joinRoom } = require('./events/room')(io)
-const { onMessage } = require('./events/chat')(io)
+const { joinRoom } = require('./events/roomEvents')(io)
+const { onMessage } = require('./events/chatEvents')(io)
 const { connections } = require('./store')
 const { highlight } = require('./logger')
 
@@ -27,17 +27,6 @@ const onConnection = (socket) => {
 
 // socket connection
 io.on("connection", onConnection)
-
-function doesRoomExist(roomInfo) {
-    for (const room in rooms) {
-        if(roomInfo.name == room.name) return true
-    }
-    return false
-}
-
-app.get('/', (req, res) => {
-    res.send('<h1>Server is running</h1>')
-})
 
 // server listening
 server.listen(PORT, () => {

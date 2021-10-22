@@ -1,9 +1,13 @@
 const { users, rooms, userRooms } = require('../store')
 const { success, warning, error, highlight } = require('../logger')
+const { json } = require('express')
 
 module.exports = (io) => {
     const joinRoom = function(room, user){
         const socket = this
+        
+        room = JSON.parse(room)
+        user = JSON.parse(user)
 
         if(!io.sockets.adapter.rooms.has(room.name)){
             // create a new room, set the room host & add participants
