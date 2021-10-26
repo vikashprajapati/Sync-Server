@@ -7,7 +7,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 // user modules imports
-const { joinRoom } = require('./events/roomEvents')(io)
+const { joinRoom, userLeft } = require('./events/roomEvents')(io)
 const { onMessage } = require('./events/chatEvents')(io)
 const { connections } = require('./store')
 const { highlight } = require('./logger')
@@ -23,6 +23,8 @@ const onConnection = (socket) => {
     socket.on("join room", joinRoom)
 
     socket.on("on message", onMessage)
+
+    socket.on("user left", userLeft)
 }
 
 // socket connection

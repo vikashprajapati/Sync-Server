@@ -1,7 +1,7 @@
-const users = []
-const connections = []
-const rooms = []
-const userRooms = {}
+let users = []
+let connections = []
+let rooms = []
+let userRooms = {}
 
 module.exports = {
     users,
