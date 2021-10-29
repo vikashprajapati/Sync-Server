@@ -15,21 +15,20 @@ const getRandomHostId = (room) => {
 }
 
 module.exports = (io) => {
-    const joinRoom = function(room, user){
+    const joinRoom = function(params){
         const socket = this
         
-        room = JSON.parse(room)
-        user = JSON.parse(user)
+        params = JSON.parse(params)
 
-        if(!io.sockets.adapter.rooms.has(room.name)){
+        if(!io.sockets.adapter.rooms.has(params.room.name)){
             // create a new room, set the room host & add participants
             let newRoom = {
-                name : room.name,
-                host : user.name,
+                name : params.room.name,
+                host : params.user.name,
                 participants : [
                     {
                         id : socket.id,
-                        name : user.name
+                        name : params.user.name
                     }
                 ]
             }
@@ -48,11 +47,11 @@ module.exports = (io) => {
             // update participant list in room
             let index = 0
             for (; index < rooms.length; index++) {
-                if(rooms[index].name == room.name){
+                if(rooms[index].name == params.room.name){
                     // update the participant details of the room
                     rooms[index].participants.push({
                         id : socket.id,
-                        name : user.name
+                        name : params.user.name
                     })
                     
                     // send the room details to the newly joined client
@@ -66,16 +65,16 @@ module.exports = (io) => {
         }
         
         // join the room 
-        socket.join(room.name)
-        console.log(success(`${user.name} joined room ${room.name} \n`))
+        socket.join(params.room.name)
+        console.log(success(`${params.user.name} joined room ${params.room.name} \n`))
         
         // store userid -> roomname mapping
-        userRooms[socket.id] = room.name
+        userRooms[socket.id] = params.room.name
 
         // save user details
         users.push({
             id : socket.id,
-            name : user.name
+            name : params.user.name
         })
     }
 
