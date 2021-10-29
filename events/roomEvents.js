@@ -38,7 +38,7 @@ module.exports = (io) => {
             console.log(success(`${newRoom.name} room is created`));
             
             // send new room details to the client
-            socket.emit("joined room response", {
+            io.to(socket.id).emit("joined room response", {
                 room : newRoom
             })
             console.log(success(`joining user in new room ${newRoom.name}, participants count ${newRoom.participants.length}`));
@@ -55,7 +55,7 @@ module.exports = (io) => {
                     })
                     
                     // send the room details to the newly joined client
-                    socket.emit("joined room response", {
+                    io.to(socket.id).emit("joined room response", {
                         room : rooms[index]
                     })
                     console.log(success(`joining user in existing room ${rooms[index].name}, participants count ${rooms[index].participants.length}`));
