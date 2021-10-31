@@ -24,7 +24,7 @@ const onConnection = (socket) => {
 
     socket.on("on message", onMessage)
 
-    socket.on("user left", userLeft)
+    socket.on("leave room", userLeft)
 }
 
 // socket connection
