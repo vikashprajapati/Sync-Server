@@ -2,6 +2,7 @@ const { users, rooms, userRooms } = require('../store')
 const { success, warning, error, highlight } = require('../logger')
 const { json } = require('express')
 const { emit } = require('nodemon')
+const e = require('cors')
 
 const getRandomHostId = (room) => {
     const high = rooms[rooms.findIndex(room => room.name == room)].participants.length
@@ -74,28 +75,37 @@ module.exports = (io) => {
 
     const userLeft = function(){
         const socket = this
-
+        console.log(success(`received leave room from ${socket.id}`));
         const userId = socket.id
         const roomName = userRooms[userId]
         const roomIndex = rooms.findIndex(room => room.name === roomName)
-        
+        console.log(success(`room index ${roomIndex}`));
 
         // remove the user person from its personal room
         socket.leave(userId)
         // remove user from the joined public room
         socket.leave(roomName)
+        console.log(success(`user left private and public rooms`));
         
         // remove user from users list
         const userIndex = users.findIndex(user => user.id == userId)
-        users.splice(index, 1)
+        users.splice(userIndex, 1)
+        console.log(success(`removed user info from users list: ${users}`));
 
         // remove user from participant list of room
+        const participantCount = rooms[roomIndex].participants.length
         rooms[roomIndex].participants = rooms[roomIndex].participants.filter(participant => {
             participant.id != userId
         })
+        if(participantCount > rooms[roomIndex].participants.length){
+            console.log(success(`participant ${userId} removed from room ${roomName}`));
+        }else{
+            console.log(error(`participant ${userId} not found in room ${roomName}`));
+        }
 
         // check user was host of the room?
         if(userId === rooms[roomIndex].host){
+            console.log(success(`left user ${userId} was the host, selecting new host`));
             let newHost;
             if(rooms[roomIndex].participants.length !== 0){
                 // make new random host
@@ -103,12 +113,15 @@ module.exports = (io) => {
                 console.log(success(`new host selected randomly ${newHost}`));
             }else{
                 newHost = -1
+                console.log(warning(`room is empty, host left. Room will be destroyed now!`));
+                rooms.splice(roomIndex, 1)
             }
             // emit new host to clients
             io.to(roomName).emit("set host", newHost)
         }
 
-        // remove user mapping from userroom hashmap
+        // remove user mapping from userroom map
+        delete userRooms[userId]
         
         // emit userLeft to all partiicipant in the room except the sender
         io.to(roomName).emit("user left", socket.id)
