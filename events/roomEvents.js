@@ -43,16 +43,20 @@ module.exports = (io) => {
             let index = 0
             for (; index < rooms.length; index++) {
                 if(rooms[index].name == params.room.name){
-                    // update the participant details of the room
-                    rooms[index].participants.push({
+                    const newUser = {
                         id : socket.id,
                         name : params.user.name
-                    })
+                    }
+                    // update the participant details of the room
+                    rooms[index].participants.push(newUser)
                     
                     // send the room details to the newly joined client
                     io.to(socket.id).emit("joined room response", {
                         room : rooms[index]
                     })
+
+                    // notify all users available in the room for the arrival of the new joined user
+                    socket.to(params.room.name).emit("participant joined", JSON.stringify(newUser))
                     console.log(success(`joining user in existing room ${rooms[index].name}, participants count ${rooms[index].participants.length}`));
                     break;
                 }
