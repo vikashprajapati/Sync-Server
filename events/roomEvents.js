@@ -14,7 +14,7 @@ module.exports = (io) => {
         const socket = this
         
         params = JSON.parse(params)
-
+        
         if(!io.sockets.adapter.rooms.has(params.room.name)){
             // create a new room, set the room host & add participants
             let newRoom = {
@@ -23,11 +23,12 @@ module.exports = (io) => {
                 participants : [
                     {
                         id : socket.id,
-                        name : params.user.name
+                        name : params.user.name,
+                        status: "online"
                     }
                 ]
             }
-
+            
             // save new room details
             rooms.push(newRoom)
             console.log(success(`${newRoom.name} room is created`));
@@ -40,26 +41,25 @@ module.exports = (io) => {
             
         }else{
             // update participant list in room
-            let index = 0
-            for (; index < rooms.length; index++) {
-                if(rooms[index].name == params.room.name){
-                    const newUser = {
-                        id : socket.id,
-                        name : params.user.name
-                    }
-                    // update the participant details of the room
-                    rooms[index].participants.push(newUser)
-                    
-                    // send the room details to the newly joined client
-                    io.to(socket.id).emit("joined room response", {
-                        room : rooms[index]
-                    })
-
-                    // notify all users available in the room for the arrival of the new joined user
-                    socket.to(params.room.name).emit("participant joined", JSON.stringify(newUser))
-                    console.log(success(`joining user in existing room ${rooms[index].name}, participants count ${rooms[index].participants.length}`));
-                    break;
+            const roomIndex = rooms.findIndex(room => room.name === params.room.name)
+            
+            if(roomIndex != -1){
+                const newUser = {
+                    id : socket.id,
+                    name : params.user.name,
+                    status : "online"
                 }
+                // update the participant details of the room
+                rooms[roomIndex].participants.push(newUser)
+                
+                // send the room details to the newly joined client
+                io.to(socket.id).emit("joined room response", {
+                    room : rooms[roomIndex]
+                })
+                
+                // notify all users available in the room for the arrival of the new joined user
+                socket.to(params.room.name).emit("participant joined", JSON.stringify(newUser))
+                console.log(success(`joining user in existing room ${rooms[roomIndex].name}, participants count ${rooms[roomIndex].participants.length}`));
             }
         }
         
@@ -69,14 +69,14 @@ module.exports = (io) => {
         
         // store userid -> roomname mapping
         userRooms[socket.id] = params.room.name
-
+        
         // save user details
         users.push({
             id : socket.id,
             name : params.user.name
         })
     }
-
+    
     const userLeft = function(){
         const socket = this
         console.log(success(`received leave room from ${socket.id}`));
@@ -84,7 +84,7 @@ module.exports = (io) => {
         const roomName = userRooms[userId]
         const roomIndex = rooms.findIndex(room => room.name === roomName)
         console.log(success(`room index ${roomIndex}`));
-
+        
         // remove the user person from its personal room
         socket.leave(userId)
         // remove user from the joined public room
@@ -95,7 +95,7 @@ module.exports = (io) => {
         const userIndex = users.findIndex(user => user.id == userId)
         users.splice(userIndex, 1)
         console.log(success(`removed user info from users list: ${users}`));
-
+        
         // remove user from participant list of room
         const participantCount = rooms[roomIndex].participants.length
         rooms[roomIndex].participants = rooms[roomIndex].participants.filter(participant => {
@@ -106,7 +106,7 @@ module.exports = (io) => {
         }else{
             console.log(error(`participant ${userId} not found in room ${roomName}`));
         }
-
+        
         // check user was host of the room?
         if(userId === rooms[roomIndex].host){
             console.log(success(`left user ${userId} was the host, selecting new host`));
@@ -123,19 +123,19 @@ module.exports = (io) => {
             // emit new host to clients
             io.to(roomName).emit("set host", newHost)
         }
-
+        
         // remove user mapping from userroom map
         delete userRooms[userId]
         
         // emit userLeft to all partiicipant in the room except the sender
         io.to(roomName).emit("user left", socket.id)
-
+        
         console.log(rooms);
         console.log(users);
         console.log(userRooms);
         console.log(io.sockets.adapter.rooms);
     }
-
+    
     return {
         joinRoom,
         userLeft
