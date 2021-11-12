@@ -7,6 +7,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 // user modules imports
+const { videoPlayback, videoChanged, videoSynced } = require('./events/playerEvents')(io)
 const { joinRoom, userLeft } = require('./events/roomEvents')(io)
 const { onMessage } = require('./events/chatEvents')(io)
 const { connections } = require('./store')
@@ -25,6 +26,12 @@ const onConnection = (socket) => {
     socket.on("on message", onMessage)
 
     socket.on("leave room", userLeft)
+
+    socket.on("video playback", videoPlayback)
+
+    socket.on("video changed", videoChanged)
+
+    socket.on("video synced", videoSynced)
 }
 
 // socket connection

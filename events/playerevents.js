@@ -1,21 +1,32 @@
+const { userRooms } = require("../store")
+const { success, warning, error, highlight } = require('../logger')
+
 module.exports = (io) => {
-
-    player = function(){
-        const socket = this
-
-        socket.on("played", (theater) => {
-            console.log(`video played at ${theater}`)
-            socket.broadcast.emit("played")
-        })
     
-        socket.on("paused", (theater) => {
-            console.log(`video paused at ${theater}`)
-            socket.broadcast.emit("paused")
-        })
+    const videoPlayback = function(playbackStatus){
+        const socket = this
         
-        socket.on("previousVideo", (theater) => {
-            console.log(`previous video at ${theater}`)
-            socket.broadcast.emit("previousVideo")
-        })
+        console.log(success(`${playbackStatus} at ${userRooms[socket.id]}`))
+        io.to(userRooms[socket.id]).emit("video playback", playbackStatus)
+    }
+    
+    const videoChanged = function(playbackDirection){
+        const socket = this
+        
+        console.log(success(`${playbackDirection} at ${userRooms[socket.id]}`))
+        io.to(userRooms[socket.id]).emit("video changed", playbackDirection)
+    }
+    
+    const videoSynced = function(playbackTimestamp){
+        const socket = this
+        
+        console.log(success(`video synced at ${userRooms[socket.id]}`))
+        io.to(userRooms[socket.id]).emit("video synced", playbackTimestamp)
+    }
+
+    return {
+        videoPlayback,
+        videoChanged,
+        videoSynced
     }
 }

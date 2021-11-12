@@ -2,7 +2,6 @@ const { users, rooms, userRooms } = require('../store')
 const { success, warning, error, highlight } = require('../logger')
 const { json } = require('express')
 const { emit } = require('nodemon')
-const e = require('cors')
 
 const getRandomHostId = (room) => {
     const high = rooms[rooms.findIndex(room => room.name == room)].participants.length
@@ -35,7 +34,11 @@ module.exports = (io) => {
             
             // send new room details to the client
             io.to(socket.id).emit("joined room response", {
-                room : newRoom
+                room : newRoom,
+                user : {
+                    id : socket.id,
+                    name : params.user.name
+                }
             })
             console.log(success(`joining user in new room ${newRoom.name}, participants count ${newRoom.participants.length}`));
             
@@ -54,7 +57,11 @@ module.exports = (io) => {
                 
                 // send the room details to the newly joined client
                 io.to(socket.id).emit("joined room response", {
-                    room : rooms[roomIndex]
+                    room : rooms[roomIndex],
+                    user : {
+                        id : socket.id,
+                        name : params.user.name
+                    }
                 })
                 
                 // notify all users available in the room for the arrival of the new joined user
