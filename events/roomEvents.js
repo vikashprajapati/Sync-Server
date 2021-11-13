@@ -135,7 +135,7 @@ module.exports = (io) => {
         delete userRooms[userId]
         
         // emit userLeft to all partiicipant in the room except the sender
-        io.to(roomName).emit("user left", socket.id)
+        io.to(roomName).emit("participant left", socket.id)
         
         console.log(rooms);
         console.log(users);
