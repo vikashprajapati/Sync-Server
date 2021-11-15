@@ -90,6 +90,7 @@ module.exports = (io) => {
         const userId = socket.id
         const roomName = userRooms[userId]
         const roomIndex = rooms.findIndex(room => room.name === roomName)
+        if(roomIndex < 0) return;
         console.log(success(`room index ${roomIndex}`));
         
         // remove the user person from its personal room
