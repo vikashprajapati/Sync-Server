@@ -22,6 +22,10 @@ app.use(function(req, res, next) {
     next();
  });
 
+ app.get("/", (req, res) => {
+     res.sendStatus(200).send("<h1>Hello!</h1>")
+ })
+
 // socket connection callbacks
 const onConnection = (socket) => {
     console.log(highlight(`connection opened by ${socket.id}`));
