@@ -29,9 +29,16 @@ module.exports = (io) => {
         io.to(userRooms[socket.id]).emit("video synced", JSON.stringify(payload))
     }
 
+    const newVideoSelected = function(videoUrl){
+        const socket = this
+        console.log(success(`new video played at ${userRooms[socket.id]}`))
+        io.to(userRooms[socket.id]).emit("new video played", videoUrl)
+    }
+
     return {
         videoPlayback,
         videoChanged,
-        videoSynced
+        videoSynced,
+        newVideoSelected
     }
 }

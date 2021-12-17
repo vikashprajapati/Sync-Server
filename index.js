@@ -7,7 +7,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 // user modules imports
-const { videoPlayback, videoChanged, videoSynced } = require('./events/playerEvents')(io)
+const { videoPlayback, videoChanged, videoSynced, newVideoSelected } = require('./events/playerevents')(io)
 const { joinRoom, userLeft } = require('./events/roomEvents')(io)
 const { onMessage } = require('./events/chatEvents')(io)
 const { connections } = require('./store')
@@ -21,10 +21,6 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     next();
  });
-
- app.get("/", (req, res) => {
-     res.sendStatus(200).send("<h1>Hello!</h1>")
- })
 
 // socket connection callbacks
 const onConnection = (socket) => {
@@ -42,6 +38,9 @@ const onConnection = (socket) => {
     socket.on("video changed", videoChanged)
 
     socket.on("video synced", videoSynced)
+
+    socket.on("new video selected", newVideoSelected)
+
 }
 
 // socket connection
