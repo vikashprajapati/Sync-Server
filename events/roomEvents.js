@@ -25,7 +25,8 @@ module.exports = (io) => {
                         name : params.user.name,
                         status: "online"
                     }
-                ]
+                ],
+                currentVideoUrl : "https://www.youtube.com/watch?v=cfVY9wLKltA"
             }
             
             // save new room details
