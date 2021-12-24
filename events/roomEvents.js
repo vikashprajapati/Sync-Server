@@ -4,8 +4,9 @@ const { json } = require('express')
 const { emit } = require('nodemon')
 
 const getRandomHostId = (room) => {
-    const high = rooms[rooms.findIndex(room => room.name == room)].participants.length
-    return rooms.participants[Math.floor(Math.random() * high)].id
+    const high = room.participants.length
+    let randomIndex = Math.floor(Math.random() * high)
+    return room.participants[randomIndex].id
 }
 
 module.exports = (io) => {
@@ -107,8 +108,9 @@ module.exports = (io) => {
         
         // remove user from participant list of room
         const participantCount = rooms[roomIndex].participants.length
-        rooms[roomIndex].participants = rooms[roomIndex].participants.filter(participant => {
-            participant.id != userId
+        let participants = rooms[roomIndex].participants
+        rooms[roomIndex].participants = participants.filter(participant => {
+            return participant.id != userId
         })
         if(participantCount > rooms[roomIndex].participants.length){
             console.log(success(`participant ${userId} removed from room ${roomName}`));
@@ -122,15 +124,15 @@ module.exports = (io) => {
             let newHost;
             if(rooms[roomIndex].participants.length !== 0){
                 // make new random host
-                newHost = getRandomHostId(roomName)
+                newHost = getRandomHostId(rooms[roomIndex])
                 console.log(success(`new host selected randomly ${newHost}`));
+                // emit new host to clients
+                io.to(roomName).emit("set host", newHost)
             }else{
                 newHost = -1
                 console.log(warning(`room is empty, host left. Room will be destroyed now!`));
                 rooms.splice(roomIndex, 1)
             }
-            // emit new host to clients
-            io.to(roomName).emit("set host", newHost)
         }
         
         // remove user mapping from userroom map
