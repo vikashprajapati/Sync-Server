@@ -60,10 +60,7 @@ module.exports = (io) => {
                 // send the room details to the newly joined client
                 io.to(socket.id).emit("joined room response", {
                     room : rooms[roomIndex],
-                    user : {
-                        id : socket.id,
-                        name : params.user.name
-                    }
+                    user : newUser
                 })
                 
                 // notify all users available in the room for the arrival of the new joined user
@@ -139,7 +136,8 @@ module.exports = (io) => {
         delete userRooms[userId]
         
         // emit userLeft to all partiicipant in the room except the sender
-        io.to(roomName).emit("participant left", socket.id)
+        let leftUser = participants[userIndex]
+        io.to(roomName).emit("participant left", JSON.stringify(leftUser))
         
         console.log(rooms);
         console.log(users);
